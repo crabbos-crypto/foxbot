@@ -6,7 +6,7 @@
 // (http://foxbot.net)
 //
 // bot.cpp
-//
+//if (!bot_team_balance) return;
 // Copyright (C) 2003 - Tom "Redfox" Simpson
 //
 //
@@ -2692,6 +2692,8 @@ static void BotGrenadeAvoidance(bot_t* pBot) {
 // and defenders on each team, and attempts to balance them out,
 // by making bots switch combat roles.
 static void BotRoleCheck(bot_t* pBot) {
+	if (!bot_team_balance) return;
+	
 	if (roleCheckTimer > gpGlobals->time && roleCheckTimer < gpGlobals->time + 300.0f) // make sure roleCheckTimer is sane
 		return;
 
