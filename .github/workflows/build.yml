@@ -6,14 +6,17 @@ jobs:
   build_main:
     name: Build for ${{ matrix.os_short }}
     runs-on: ${{ matrix.os_version }}
+    
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
     if: "!contains(github.event.head_commit.message, '[ci skip]')"
+
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, windows-latest]
         include:
-          - os: ubuntu-22.04
-            os_short: linux
+          - os_short: linux
             os_version: ubuntu-22.04
             package_ext: tar.gz
             dbg_ext: dbg
@@ -21,8 +24,8 @@ jobs:
             cxx: clang++
             vs_arch: unused
             am_arch: x86
-          - os: windows-latest
-            os_short: win32
+
+          - os_short: win32
             os_version: windows-latest
             package_ext: zip
             dbg_ext: pdb
