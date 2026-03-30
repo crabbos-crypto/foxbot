@@ -2,15 +2,15 @@ name: Build
 
 on: ["push", "workflow_dispatch"]
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 jobs:
   build_main:
     name: Build for ${{ matrix.os_short }}
     runs-on: ${{ matrix.os_version }}
+    
+    # MOVE ENV HERE
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
-    # skip build on '[ci skip]'
     if: "!contains(github.event.head_commit.message, '[ci skip]')"
 
     strategy:
@@ -40,7 +40,6 @@ jobs:
             vs_arch: x32
             am_arch: x86
 
-
     steps:
     - name: Install (Linux)
       if: runner.os == 'Linux'
@@ -59,12 +58,9 @@ jobs:
       if: runner.os == 'Windows'
       shell: cmd
       run: |
-        :: See https://github.com/microsoft/vswhere/wiki/Find-VC
         for /f "usebackq delims=*" %%i in (`vswhere -latest -property installationPath`) do (
           call "%%i"\Common7\Tools\vsdevcmd.bat -arch=${{ matrix.vs_arch }} -host_arch=x64
         )
-        
-        :: Loop over all environment variables and make them global.
         for /f "delims== tokens=1,2" %%a in ('set') do (
           echo>>"%GITHUB_ENV%" %%a=%%b
         )
@@ -92,11 +88,8 @@ jobs:
       run: |
         mkdir post
         cd post
-        
         export AM_ARCH=${{ matrix.am_arch }}
-
         python3 ../configure.py --symbol-files --enable-optimize
-        
         ambuild
 
     - uses: benjlevesque/short-sha@v2.2
@@ -108,10 +101,3 @@ jobs:
         name: foxbot-${{ matrix.os_short }}-${{ steps.short-sha.outputs.sha }}
         path: |
             foxbot/post/*
-
-    - name: Upload Debug Symbols
-      uses: actions/upload-artifact@v4
-      with:
-        name: foxbot-dbgsym-${{ matrix.os_short }}-${{ steps.short-sha.outputs.sha }}
-        path: |
-            foxbot/post/**/*.${{ matrix.dbg_ext }}
