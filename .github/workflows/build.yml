@@ -6,19 +6,11 @@ jobs:
   build_main:
     name: Build for ${{ matrix.os_short }}
     runs-on: ${{ matrix.os_version }}
-    
-    # MOVE ENV HERE
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
     if: "!contains(github.event.head_commit.message, '[ci skip]')"
-
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - ubuntu-22.04
-          - windows-x32
+        os: [ubuntu-22.04, windows-latest]
         include:
           - os: ubuntu-22.04
             os_short: linux
@@ -29,8 +21,7 @@ jobs:
             cxx: clang++
             vs_arch: unused
             am_arch: x86
-
-          - os: windows-x32
+          - os: windows-latest
             os_short: win32
             os_version: windows-latest
             package_ext: zip
@@ -41,6 +32,12 @@ jobs:
             am_arch: x86
 
     steps:
+    - name: Fetch FoXBot
+      uses: actions/checkout@v4
+      with:
+        path: foxbot
+        submodules: recursive
+
     - name: Install (Linux)
       if: runner.os == 'Linux'
       run: |
@@ -76,12 +73,6 @@ jobs:
         python -m pip install wheel
         pip install git+https://github.com/alliedmodders/ambuild
 
-    - name: Fetch FoXBot
-      uses: actions/checkout@v4
-      with:
-        path: foxbot
-        submodules: recursive
-
     - name: Build Files
       shell: bash
       working-directory: foxbot
@@ -99,5 +90,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: foxbot-${{ matrix.os_short }}-${{ steps.short-sha.outputs.sha }}
-        path: |
-            foxbot/post/*
+        path: foxbot/post/*
